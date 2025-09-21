@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>작업 관리표</title>
+  <style>
+    body {
+      background: #222;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #555;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #333;
+    }
+    input, select, button, label {
+      margin: 5px;
+      padding: 5px;
+    }
+    #statusChart {
+      max-width: 400px;
+      margin: auto;
+    }
+    #calendar {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      color: #000;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .repeat-days label {
+      margin-right: 5px;
+    }
+    #selectedDateDisplay {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0 10px 0;
+      padding: 10px;
+      background: #333;
+      border-radius: 5px;
+      text-align: center;
+    }
+    /* 선택된 날짜 하이라이트 스타일 */
+    .fc-day.selected-date {
+      background-color: rgba(52, 152, 219, 0.3) !important;
+      border: 2px solid #3498db !important;
+    }
+    .fc-day.selected-date .fc-daygrid-day-frame {
+      background-color: rgba(52, 152, 219, 0.2) !important;
+    }
+
+    /* 모바일 반응형 디자인 */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* 입력 폼 모바일 최적화 */
+      .input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      #taskInput {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #555;
+        background: #333;
+        color: #eee;
+        border-radius: 4px;
+      }
+
+      #dateInput, #priorityInput {
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #555;
+        background: #333;
+        color: #eee;
+        border-radius: 4px;
+      }
+
+      button {
+        padding: 12px 16px;
+        font-size: 14px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        min-width: 80px;
+      }
+
+      button:hover {
+        background: #2980b9;
+      }
+
+      /* 반복 작업 섹션 */
+      #repeatSection {
+        background: #333;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+
+      .repeat-days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .repeat-days label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        background: #444;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .repeat-days input[type="checkbox"] {
+        margin: 0;
+      }
+
+      /* 선택된 날짜 표시 */
+      #selectedDateDisplay {
+        font-size: 16px;
+        padding: 12px;
+        margin: 15px 0;
+        word-break: keep-all;
+      }
+
+      /* 테이블 모바일 최적화 */
+      table {
+        font-size: 12px;
+        margin-bottom: 30px;
+      }
+      
+      th, td {
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+
+      /* 작업명 열을 더 넓게 */
+      th:first-child, td:first-child {
+        min-width: 80px;
+        text-align: left;
+        padding-left: 8px;
+      }
+
+      /* 상태 선택 드롭다운 */
+      td select {
+        padding: 4px;
+        font-size: 11px;
+        background: #333;
+        color: #eee;
+        border: 1px solid #555;
+        border-radius: 3px;
+        width: 70px;
+      }
+
+      /* 삭제 버튼 */
+      td button {
+        padding: 6px 8px;
+        font-size: 10px;
+        min-width: 40px;
+        background: #e74c3c;
+      }
+
+      td button:hover {
+        background: #c0392b;
+      }
+
+      /* 차트 모바일 최적화 */
+      #statusChart {
+        max-width: 280px;
+        margin: 20px auto;
+      }
+
+      /* 캘린더 모바일 최적화 */
+      #calendar {
+        max-width: 100%;
+        margin: 20px 0;
+        padding: 5px;
+        font-size: 12px;
+      }
+
+      /* FullCalendar 모바일 스타일 */
+      .fc-header-toolbar {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+      }
+
+      .fc-button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+      }
+
+      .fc-daygrid-day {
+        min-height: 35px !important;
+      }
+
+      .fc-event {
+        font-size: 10px !important;
+        padding: 1px 2px !important;
+      }
+
+      /* 스크롤 개선 */
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* 태블릿 사이즈 */
+    @media screen and (min-width: 769px) and (max-width: 1024px) {
+      #calendar {
+        max-width: 700px;
+      }
+      
+      table {
+        font-size: 14px;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+</head>
+<body>
+  <h1>작업 관리표</h1>
+
+  <!-- 새 작업 입력 -->
+  <div class="input-container">
+    <div class="input-row">
+      <input type="text" id="taskInput" placeholder="해야할 일">
+      <input type="date" id="dateInput">
+    </div>
+    <div class="input-row">
+      <label>중요도</label>
+      <select id="priorityInput">
+        <option value="낮음">낮음</option>
+        <option value="보통">보통</option>
+        <option value="높음">높음</option>
+      </select>
+      <button onclick="addTask()">추가</button>
+      <button onclick="toggleRepeat()">반복작업</button>
+    </div>
+  </div>
+
+  <!-- 반복 요일 선택 -->
+  <div id="repeatSection" style="display:none; margin-top:10px;">
+    <span>반복 요일: </span>
+    <div class="repeat-days">
+      <label><input type="checkbox" value="0">일</label>
+      <label><input type="checkbox" value="1">월</label>
+      <label><input type="checkbox" value="2">화</label>
+      <label><input type="checkbox" value="3">수</label>
+      <label><input type="checkbox" value="4">목</label>
+      <label><input type="checkbox" value="5">금</label>
+      <label><input type="checkbox" value="6">토</label>
+    </div>
+  </div>
+
+  <!-- 선택된 날짜 표시 -->
+  <div id="selectedDateDisplay">선택된 날짜: 오늘 (2025-09-21)</div>
+
+  <!-- 작업 테이블 -->
+  <div class="table-container">
+    <table id="taskTable">
+      <tr>
+        <th>해야할 일</th>
+        <th>진행 상태</th>
+        <th>날짜</th>
+        <th>중요도</th>
+        <th>시간</th>
+        <th>삭제</th>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 원그래프 -->
+  <canvas id="statusChart"></canvas>
+
+  <!-- 캘린더 -->
+  <div id="calendar"></div>
+
+  <script>
+    const taskTable = document.getElementById("taskTable");
+    let tasks = [];
+    let chart;
+    let calendar;
+    let currentSelectedDate = new Date().toISOString().slice(0,10);
+
+    function saveTasks() {
+      const tasksForSave = tasks.map(t => ({
+        ...t,
+        intervalId: null,
+        displayCell: null
+      }));
+      localStorage.setItem("tasks", JSON.stringify(tasksForSave));
+    }
+
+    function loadTasks() {
+      const saved = localStorage.getItem("tasks");
+      if (saved) {
+        tasks = JSON.parse(saved);
+        tasks.forEach(t => {
+          t.startTime = t.startTime ? new Date(t.startTime) : null;
+          t.intervalId = null;
+          t.displayCell = null;
+        });
+      }
+    }
+
+    function formatDateKorean(dateStr) {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      const dayName = days[date.getDay()];
+      
+      const today = new Date().toISOString().slice(0,10);
+      if (dateStr === today) {
+        return `오늘 (${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}, ${dayName}요일)`;
+      }
+      return `${year}년 ${month}월 ${day}일 (${dayName}요일)`;
+    }
+
+    function updateSelectedDateDisplay(dateStr) {
+      const display = document.getElementById("selectedDateDisplay");
+      display.textContent = `선택된 날짜: ${formatDateKorean(dateStr)}`;
+      currentSelectedDate = dateStr;
+      
+      // 이전 선택된 날짜의 하이라이트 제거
+      document.querySelectorAll('.fc-day.selected-date').forEach(el => {
+        el.classList.remove('selected-date');
+      });
+      
+      // 새로 선택된 날짜 하이라이트
+      const targetDate = new Date(dateStr);
+      const targetDateStr = targetDate.getFullYear() + '-' + 
+                           String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(targetDate.getDate()).padStart(2, '0');
+      
+      // FullCalendar의 날짜 셀 찾기 및 하이라이트
+      setTimeout(() => {
+        const dayElements = document.querySelectorAll(`[data-date="${targetDateStr}"]`);
+        dayElements.forEach(el => {
+          el.classList.add('selected-date');
+        });
+      }, 100);
+    }
+
+    function addTask() {
+      const taskName = document.getElementById("taskInput").value;
+      const date = document.getElementById("dateInput").value;
+      const priority = document.getElementById("priorityInput").value;
+      const repeatDays = Array.from(document.querySelectorAll("#repeatSection input:checked"))
+        .map(cb => parseInt(cb.value));
+
+      if (!taskName) return alert("해야할 일을 입력하세요!");
+
+      const newTask = {
+        id: Date.now(),
+        name: taskName,
+        status: "진행 전",
+        date: date || null,
+        priority: priority,
+        elapsedMs: 0,
+        startTime: null,
+        intervalId: null,
+        repeatDays: repeatDays
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+      
+      // 새 작업이 현재 선택된 날짜에 해당하는지 확인하고 렌더링
+      const selectedDate = currentSelectedDate || new Date().toISOString().slice(0,10);
+      renderTasks(selectedDate);
+      updateChart();
+      updateCalendar();
+      document.getElementById("taskInput").value = "";
+      
+      // 반복 작업 체크박스 초기화
+      document.querySelectorAll("#repeatSection input[type='checkbox']").forEach(cb => cb.checked = false);
+    }
+
+    function getStatusColor(status) {
+      switch(status) {
+        case "진행 전": return "#f39c12";  // 주황색
+        case "진행 중": return "#3498db";  // 파란색
+        case "중지": return "#9b59b6";     // 보라색
+        case "완료": return "#2ecc71";     // 초록색
+        default: return "#95a5a6";        // 회색
+      }
+    }
+
+    function renderTasks(selectedDate) {
+      if (!selectedDate) {
+        selectedDate = new Date().toISOString().slice(0,10);
+      }
+      
+      updateSelectedDateDisplay(selectedDate);
+      
+      taskTable.innerHTML = `
+        <tr>
+          <th>해야할 일</th>
+          <th>진행 상태</th>
+          <th>날짜</th>
+          <th>중요도</th>
+          <th>시간</th>
+          <th>삭제</th>
+        </tr>
+      `;
+
+      const filteredTasks = tasks.filter(task => {
+        // 반복 작업인 경우
+        if (task.repeatDays && task.repeatDays.length > 0) {
+          const d = new Date(selectedDate);
+          if (task.repeatDays.includes(d.getDay())) return true;
+        }
+        // 일반 작업인 경우 (날짜가 없는 작업도 오늘 날짜로 간주)
+        if (task.date === selectedDate) return true;
+        if (!task.date && selectedDate === new Date().toISOString().slice(0,10)) return true;
+        
+        return false;
+      });
+
+      // 중요도별로 정렬 (높음 > 보통 > 낮음)
+      const priorityOrder = { '높음': 3, '보통': 2, '낮음': 1 };
+      filteredTasks.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+
+      filteredTasks.forEach((task, index) => {
+        const row = taskTable.insertRow();
+        row.insertCell(0).innerText = task.name;
+
+        // 상태 선택
+        const statusCell = row.insertCell(1);
+        const select = document.createElement("select");
+        ["진행 전", "진행 중", "중지", "완료"].forEach(status => {
+          const option = document.createElement("option");
+          option.value = status;
+          option.text = status;
+          if (task.status === status) option.selected = true;
+          select.appendChild(option);
+        });
+        select.onchange = () => changeStatus(task.id, select.value);
+        statusCell.appendChild(select);
+
+        row.insertCell(2).innerText = task.date || "오늘";
+        row.insertCell(3).innerText = task.priority;
+
+        const timeCell = row.insertCell(4);
+        timeCell.innerText = formatTime(task);
+        task.displayCell = timeCell;
+
+        // 삭제 버튼
+        const delCell = row.insertCell(5);
+        const delBtn = document.createElement("button");
+        delBtn.innerText = "삭제";
+        delBtn.onclick = () => deleteTask(task.id);
+        delCell.appendChild(delBtn);
+
+        if (task.status === "진행 중" && !task.intervalId) {
+          startTimer(task);
+        }
+      });
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      renderTasks(currentSelectedDate);
+      updateChart();
+      updateCalendar();
+    }
+
+    function changeStatus(id, newStatus) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      if (newStatus === "진행 중") {
+        if (!task.startTime) {
+          task.startTime = new Date();
+        }
+        startTimer(task);
+      } else if (newStatus === "중지") {
+        if (task.startTime) {
+          task.elapsedMs += new Date() - task.startTime;
+          task.startTime = null;
+        }
+        stopTimer(task);
+      } else if (newStatus === "완료") {
+        if (task.startTime) {
+          task.elapsedMs += new Date() - task.startTime;
+          task.startTime = null;
+        }
+        stopTimer(task);
+      } else if (newStatus === "진행 전") {
+        task.elapsedMs = 0;
+        task.startTime = null;
+        stopTimer(task);
+      }
+
+      task.status = newStatus;
+      saveTasks();
+      renderTasks(currentSelectedDate);
+      updateChart();
+      updateCalendar();
+    }
+
+    function startTimer(task) {
+      stopTimer(task);
+      task.intervalId = setInterval(() => {
+        if (task.displayCell) {
+          task.displayCell.innerText = formatTime(task);
+        }
+      }, 1000);
+      saveTasks();
+    }
+
+    function stopTimer(task) {
+      if (task.intervalId) {
+        clearInterval(task.intervalId);
+        task.intervalId = null;
+      }
+      saveTasks();
+    }
+
+    function formatTime(task) {
+      let totalMs = task.elapsedMs;
+      if (task.startTime) {
+        totalMs += new Date() - task.startTime;
+      }
+      const pad = n => String(n).padStart(2, "0");
+      const seconds = pad(Math.floor((totalMs / 1000) % 60));
+      const minutes = pad(Math.floor((totalMs / (1000 * 60)) % 60));
+      const hours = pad(Math.floor(totalMs / (1000 * 60 * 60)));
+      return `${hours}시간 ${minutes}분 ${seconds}초`;
+    }
+
+    function updateChart() {
+      const statusCounts = {
+        "진행 전": 0,
+        "진행 중": 0,
+        "중지": 0,
+        "완료": 0
+      };
+
+      tasks.forEach(task => statusCounts[task.status]++);
+
+      const ctx = document.getElementById("statusChart").getContext("2d");
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["진행 전", "진행 중", "중지", "완료"],
+          datasets: [{
+            data: [
+              statusCounts["진행 전"],
+              statusCounts["진행 중"],
+              statusCounts["중지"],
+              statusCounts["완료"]
+            ],
+            backgroundColor: ["#f39c12", "#3498db", "#9b59b6", "#2ecc71"]
+          }]
+        }
+      });
+    }
+
+    function updateCalendar() {
+      const events = tasks.flatMap(task => {
+        if (task.repeatDays && task.repeatDays.length > 0) {
+          return task.repeatDays.map(d => ({
+            title: task.name + " (반복)",
+            startRecur: new Date().toISOString().split("T")[0],
+            daysOfWeek: [d],
+            allDay: true,
+            backgroundColor: getStatusColor(task.status),
+            borderColor: getStatusColor(task.status)
+          }));
+        } else if (task.date) {
+          return [{
+            title: task.name,
+            start: task.date,
+            allDay: true,
+            backgroundColor: getStatusColor(task.status),
+            borderColor: getStatusColor(task.status)
+          }];
+        } else {
+          // 날짜가 없는 작업은 오늘 날짜로 표시
+          return [{
+            title: task.name,
+            start: new Date().toISOString().split("T")[0],
+            allDay: true,
+            backgroundColor: getStatusColor(task.status),
+            borderColor: getStatusColor(task.status)
+          }];
+        }
+      });
+
+      calendar.removeAllEvents();
+      events.forEach(ev => calendar.addEvent(ev));
+    }
+
+    function toggleRepeat() {
+      const section = document.getElementById("repeatSection");
+      section.style.display = section.style.display === "none" ? "block" : "none";
+    }
+
+    function autoCarryOver() {
+      const today = new Date().toISOString().slice(0,10);
+      tasks.forEach(task => {
+        if (task.date && task.date < today && task.status !== "완료") {
+          const d = new Date(task.date);
+          d.setDate(d.getDate() + 1);
+          task.date = d.toISOString().slice(0,10);
+        }
+      });
+      saveTasks();
+    }
+
+    loadTasks();
+    autoCarryOver();
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const calendarEl = document.getElementById("calendar");
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        },
+        dateClick: function(info) {
+          renderTasks(info.dateStr);
+        },
+        // 캘린더 렌더링 완료 후 초기 선택 날짜 하이라이트
+        viewDidMount: function() {
+          updateSelectedDateDisplay(currentSelectedDate);
+        },
+        // customButtons로 today 버튼의 동작을 커스터마이즈
+        customButtons: {
+          today: {
+            text: 'today',
+            click: function() {
+              // 오늘 날짜로 이동
+              calendar.today();
+              // 오늘 날짜 선택 및 작업 표시
+              const todayStr = new Date().toISOString().slice(0,10);
+              renderTasks(todayStr);
+            }
+          }
+        },
+        // Today 버튼이 항상 활성화되도록 설정
+        validRange: function() {
+          return {
+            start: '1900-01-01',
+            end: '2099-12-31'
+          };
+        },
+        // 날짜 클릭 시 Today 버튼 상태 업데이트
+        datesSet: function() {
+          // Today 버튼을 항상 활성화 상태로 유지
+          setTimeout(() => {
+            const todayButton = document.querySelector('.fc-today-button');
+            if (todayButton) {
+              todayButton.disabled = false;
+              todayButton.classList.remove('fc-button-disabled');
+            }
+          }, 50);
+        }
+      });
+      calendar.render();
+
+      renderTasks(currentSelectedDate);
+      updateChart();
+      updateCalendar();
+    });
+  </script>
+</body>
+</html>
